@@ -1,0 +1,30 @@
+# Relax atoms and box
+
+units			metal
+atom_style		atomic
+dimension		3
+boundary		p p m
+
+read_data 		_DATA_FILE
+
+pair_style		sedrebo 0.0 0 0
+pair_coeff		* * _POTENTIAL_FILE C
+
+velocity		all create 0. 493838
+
+compute			bond_length all pair/local dist
+compute			atomic_energy all pe/atom  
+compute 		atomic_stress all stress/atom
+variable 		atomic_pressure atom (c_atomic_stress[1]+c_atomic_stress[2])/2
+
+timestep 		0.0002
+thermo			1
+thermo_style	custom	step etotal press lx ly lz pxx pyy pzz pxy pxz pyz
+thermo_modify	format float %.10f
+
+dump			RDUMP	all custom 1 _OUTPUT_DIR/*.dump id x y z c_atomic_energy v_atomic_pressure c_atomic_stress[1] c_atomic_stress[2] c_atomic_stress[3] c_atomic_stress[4] c_atomic_stress[5] c_atomic_stress[6]
+
+dump			coord_dump	all custom 20000 _OUTPUT_DIR/*.coorddump id type xs ys zs
+
+minimize 1.0e-12 1.0e-6 10000 600000
+min_style cg

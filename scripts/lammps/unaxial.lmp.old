@@ -1,0 +1,52 @@
+# Uniaxial Load Experiment 
+
+read_data 		_INPUT_FILE
+
+units 			metal
+atom_style		atomic
+dimension		3
+boundary 		p	p	p
+
+pair_style 		_PAIR_STYLE_ARGS
+pair_coeff 		* * _POTENTIAL_PATH
+
+# System stress value per LAMMPS
+compute 		stress all pressure NULL 
+
+# System stress computation per Roma
+compute         stress_roma all stress/atom
+compute         p_roma all reduce sum c_stress_roma[1] c_stress_roma[2] c_stress_roma[3]
+variable        p2_roma equal (c_p_roma[1]+c_p_roma[2]+c_p_roma[3])/(3*vol)
+
+# Stress per atom
+compute			press_vol all stress/atom NULL
+
+# System strain from volume (box volume?)
+variable 		vol_inst equal vol
+variable 		vol_init equal ${vol_inst}
+variable 		strain_vol equal "${vol_inst}/${vol_init}-1"
+
+# System strain components -- how to determine length of material rather than length of box
+variable 		len_inst_x equal lx
+variable 		len_inst_y equal ly
+variable 		len_inst_z equal lz
+variable 		len_init_x equal ${len_inst_x}
+variable 		len_init_y equal ${len_inst_y}
+variable 		len_init_z equal ${len_inst_z}
+
+# Strain per atom
+# Based on bond lengths?
+
+velocity 		all create 0. 584637
+
+timestep 		0.0002
+thermo 			1
+thermo_style 	custom step press c_stress c_stress_roma c_strain_vol
+# c_epsilon
+thermo_modify 	format float %.10f
+
+dump			DUMP all custom 20000 _DUMP_FILE id x y z c_press_vol[1] c_press_vol[2] c_press_vol[3]
+dump_modify		DUMP sort id
+
+min_style 		cg
+minimize		1.0e-12 1.0e-6 10000 600000

@@ -1,0 +1,8 @@
+ frame 1
+ num_frames = getProperty("modelInfo.modelCount")
+ for (var i = 1; i <= num_frames; i = i+1)
+   var filename = "movie"+("00000"+i)[-4][0]+".jpg"
+   write IMAGE 800 600 JPG @filename
+   frame next
+ end for
+exitJmol

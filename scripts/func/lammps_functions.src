@@ -1,0 +1,99 @@
+#!/bin/bash
+
+# Usage: loc_x <LAMMPS input file> <atom #>
+loc_x() { cat $1|grep "^$2\s*[0-9]"|
+					sed "s/^$2\s*1\s*\([-0-9.]*\)\s*[-0-9.]*\s*[-0-9.]*\s*/\1/"; }
+loc_y() { cat $1|grep "^$2\s*[0-9]"|
+					sed "s/^$2\s*1\s*[-0-9.]*\s*\([-0-9.]*\)\s*[-0-9.]*\s*/\1/"; }
+
+
+# Usage: 
+# pullout <LAMMPS input file> "<atom #> <atom #> ..." <x displacement> <y disp>
+#
+#	Return LAMMPS input file text after adding displacement*sin(theta) to
+# y coord, and displacement*cos(theta) to the x coord, of indicated atom #.
+pullout() {
+	if [[ $3 == 0 && $4 == 0 ]]; then exit 0; fi
+	count=0
+	echo $2: $3, $4 > outputsomething
+	for atom in $2; do
+		((count++))
+		newloc_x=$(bc <<< "$(loc_x $1 $2) + $3")
+		newloc_y=$(bc <<< "$(loc_y $1 $2) + $4")
+
+		# echo $1 $2 $3 $4 > /dev/stderr
+		cat $1|sed "s/^\($2\s*1\s*\)\([-0-9.]*\)\(\s*\)\([-0-9.]*\)\(\s*\)\([-0-9.]*\)\(\s*$\)/\1${newloc_x}\3${newloc_y}\5\6\7/" > cmd.pullout.tmp.$count
+	done
+	echo cmd.pullout.tmp.$count
+	rm -f cmd.pullout.tmp.* >> /dev/null 2> /dev/null
+}
+
+
+# Usage: get_pulled_atoms <LAMMPS input file>
+#
+# Return a list of atoms from LAMMPS group "pulled" from LAMMPS input file.
+get_pulled_atoms() {
+#	grep 'group' $1|grep 'pulled'|sed 's/^.*id[\s]*\([0-9\s]*\)[\s]*$/\1/'
+	grep 'group' $1|grep 'pulled'|sed 's/[^0-9\s]?/'
+}
+
+
+# Usage: convert_to_pull_displacement <value> <order>
+#
+# Converts int to a decimal number in angstroms where int is 1/order angstroms.
+convert_to_pull_displacement() {
+	echo $(bc <<< "scale=2; $1 / $2"|
+		sed 's/^\([0-9]\)*$/\1\.00/'|
+		sed 's/\.\([0-9]\)\s*$/\.\10/'|
+		sed 's/^\./0\./')
+}
+
+
+
+#	Print the three-dimensional extremes of the atom coordinates in a LAMMPS
+# input file.
+
+# Usage: print_extremes <LAMMPS input file>
+# Output: <x_min> <x_max> <y_min> <y_max> <z_min> <z_max>
+print_extremes() {
+	input_file=$1
+	found_atoms="false"
+	while read -r line; do
+		if [[ $found_atoms == "false" ]]; then
+			if [[ $line == "Atoms" ]]; then	found_atoms="true"; fi
+			continue
+		fi
+		atom_num=$(echo $line|sed 's/^\s*\([0-9]*\).*/\1/')
+		x_cur=$(echo $line|sed 's/^\s*[0-9]\+\s\+[0-9]\+\s\+\([0-9.-]\+\).*$/\1/')
+		y_cur=$(echo $line|sed 's/^\s*[0-9]\+\s\+[0-9]\+\s\+[0-9.-]\+\s*\([0-9.-]\+\).*$/\1/')
+		z_cur=$(echo $line|sed 's/^\s*[0-9]\+\s\+[0-9]\+\s\+[0-9.-]\+\s*[0-9.-]\+\s*\([0-9.-]\+\)\s*$/\1/')
+		if [[ ! $atom_num -ge 1 ]]; then continue; fi
+		if [[ $atom_num == "1" ]]; then
+			x_max=$x_cur; x_min=$x_cur
+			y_max=$y_cur; y_min=$y_cur
+			z_max=$z_cur; z_min=$z_cur
+		fi
+		if [[ $(bc <<< "$x_cur > $x_max") == "1" ]]; then
+			x_max=$x_cur
+		fi
+		if [[ $(bc <<< "$x_cur < $x_min") == "1" ]]; then
+			x_min=$x_cur
+		fi
+		if [[ $(bc <<< "$y_cur > $y_max") == "1" ]]; then
+			y_max=$y_cur
+		fi
+		if [[ $(bc <<< "$y_cur < $y_min") == "1" ]]; then
+			y_min=$y_cur
+		fi
+		if [[ $(bc <<< "$z_cur > $z_max") == "1" ]]; then
+			z_max=$z_cur
+		fi
+		if [[ $(bc <<< "$z_cur < $z_min") == "1" ]]; then
+			z_min=$z_cur
+		fi
+	done < $input_file
+	echo "$x_min $x_max $y_min $y_max $z_min $z_max"
+}
+
+
+

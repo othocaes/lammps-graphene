@@ -1,0 +1,56 @@
+
+
+Poster Plan
+
+
+Title:
+
+Effect of Grain Boundaries on Mechanical Properties of Graphene
+
+
+
+Intro
+
+	(1) extreme properties of graphene
+	
+	(2) CVD contains grain boundaries
+	
+	(3) Rasool findings re: misorientation angle
+	
+	(4) Goal is to study mechanical properties of bicrystal graphene using simple model
+
+
+
+Motivation
+
+	Rasool's graph
+
+
+
+Computational Details
+
+	Describe method - MD
+
+	Potential - SEDREBO, REBO
+
+	Samples
+		- construction
+		- schematic
+		- list all samples used
+
+
+
+Goal
+
+	- Young's Modulus ( theta )
+	- Fracture Strength ( theta )
+	- Formation Energy (normalized) ( theta )
+
+
+Results
+
+	- Young's Modulus ( theta )
+	- Fracture Strength ( theta )
+	- Formation Energy (normalized) ( theta )
+
+

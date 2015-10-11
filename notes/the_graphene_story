@@ -1,0 +1,64 @@
+Graphene's Story
+
+
+(Picture of Pristine Graphene)
+
+
+Pristine graphene is one of the strongest materials ever measured (1). It possesses over 100 times greater breaking strength than a hypothetical steel film of the same thickness (2).
+
+Pristine (monocrystalline, defects are insignificant) graphene can be created by exfoliation. This is often called the "scotch tape method." This method was first demonstrated experimentally in 2004 at the University of Manchester.
+
+This method does not scale to industrial purposes. The largest samples created by exfoliation barely exceed 1mm length (3).
+
+Graphene can also be created using chemical vapor deposition. This method scales well for industrial purposes. However, graphene produced in this fashion will contain multiple grains with varying orientations and grain boundaries (polycrystalline graphene).
+
+ (Picture of Polycrystalline Graphene)
+
+
+These variations will likely degrade the mechanical properties from that of pristine graphene. Several experiments have been conducted to test the mechanical properties of polycrystalline graphene. So far, results have been promising that polycrystalline graphene may be a viable large-area ultrastrong material.
+
+
+
+(Experimental Results)
+
+Lee et all conclude that there is no statistical difference between the mean elastic stiffness of pristine and large or small grain polycrystalline graphene. However, there is a statistically significant difference between the mean fracture load of small grain polycrystalline graphene compared to pristine or large grain. 
+
+The distributions for LG and SG samples are wider, leading one to ask, what are the physics that govern the behavior leading to this wider distribution?
+
+Rasool et al conclude tensile strength increases with grain orientation. Grain type does not appear to significantly influence tensile strength.
+
+Rasool et al provide a map of the carbon crystal structure, including bond lengths for bicrystalline and single crystal membranes. They also map the strain field around the grain boundary.
+	
+
+
+The Materials Science lab is interested in developing greater theoretical understanding of the physics underlying the mechanical behavior of polycrystalline graphene, specifically, how it responds to load stress – fracture strength, elastic modulus, local stress, and crack propagation S– as a function of grain interface angle.
+	
+
+(Computational Methods)
+
+
+Simulated CVD
+	"Grows" randomly oriented graphene grains from point sources.
+
+Molecular Dynamics
+	LAMMPS
+
+
+DFT
+
+
+MSL uses molecular dynamics and DFT to simulate the mechanical properties of polycrystalline graphene.
+
+Simulated CVD.
+
+LAMMPS
+
+
+
+
+
+Lee, G., Cooper, R., An, S.J., Lee, S., van der Zande, A., Petrone, N., Hammerberg, A., Lee, C., Crawford, B., Oliver, W., Kysar, J., Hone, J.  High-Strength Chemical-Vapor-Deposited Graphene and Grain Boundaries. Science 340, 1073 (2013)
+Rasool, H., Ophus, C., Klug, W., Zettl, A., Gimzewski, J. Measurement of the Intrinsic Strength of Crystalline and Polycrystalline Graphene. Nature Communications 10.1038/ncomms3811 (2013) 
+Kusmartsev, F.V., Wu, W.M., Pierpoint, M.P., Yung, K.C. Application of Graphene within Optoelectronic Devices and Transistors. arXiv:1406.0809v1 [cond-mat.mtrl-sci] 
+Geim, A. K., MacDonald, A. H. Graphene: Exploring carbon flatland. Physics Today 60 (8): 35–41 (2007)
+Banhart, F., Kotakoski, J., Krasheninnikov, A.V. Structural Defects in Graphene. ACS Nano 5 (1), pp 26–41 (2011)

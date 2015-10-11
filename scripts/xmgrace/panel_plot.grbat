@@ -1,0 +1,90 @@
+# make a panel plot
+#arrange (2,2,.1,.6,.6,ON,ON,ON)
+arrange (2,2,.15,.7,1)
+
+
+
+################
+FOCUS G0
+title "Energy (x)"
+xaxis label "Displacement in x (\cE\C)"
+yaxis label "Energy (eV)"
+
+s0 linestyle 0
+s0 symbol 2
+s0 symbol size .25
+s0 symbol color 1
+s0 symbol fill color 1
+s0 symbol fill pattern 1
+
+# Pristine energy line
+s1 point -40,-7.956
+s1 point 40,-7.956
+
+READ NXY "energy_afo_x.xm"
+
+#xaxis tick major 5
+#xaxis ticklabel start -10.0
+#xaxis ticklabel stop 10.0
+yaxis tick major .2
+yaxis tick minor ticks 5
+
+
+################
+FOCUS G1
+title "Average Bond Length (x)"
+xaxis label "Displacement in x (\cE\C)"
+yaxis label "Average Bond Length (\cE\C)"
+
+s0 linestyle 0
+s0 symbol 2
+s0 symbol size .25
+s0 symbol color 1
+s0 symbol fill color 1
+s0 symbol fill pattern 1
+
+READ NXY "bond_length_afo_x.xm"
+
+# Pristine bond length line
+s1 point -40,1.42199
+s1 point 40,1.42199
+
+
+################
+FOCUS G2
+title "Pressure (x)"
+xaxis label "Displacement in x (\cE\C)"
+yaxis label "Pressure (Bar)"
+
+s0 linestyle 0
+s0 symbol 2
+s0 symbol size .25
+s0 symbol color 1
+s0 symbol fill color 1
+s0 symbol fill pattern 1
+
+READ NXY "pressure_afo_x.xm"
+
+# Zero line
+s1 point -40,0
+s1 point 40,0
+
+
+################
+FOCUS G3
+title "Stress\sxy\S (x)"
+xaxis label "Displacement in x (\cE\C)"
+yaxis label "Stress\sxy\S (Bar)"
+
+s0 linestyle 0
+s0 symbol 2
+s0 symbol size .25
+s0 symbol color 1
+s0 symbol fill color 1
+s0 symbol fill pattern 1
+
+READ NXY "stressxy_afo_x.xm"
+
+# Zero line
+s1 point -40,0
+s1 point 40,0

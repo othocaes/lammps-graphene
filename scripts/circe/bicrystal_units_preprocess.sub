@@ -1,0 +1,18 @@
+#!/bin/bash
+#$ -N BICRYSTAL_UNITS_PREPROCESS
+#$ -S /bin/bash
+#$ -l h_rt=6:30:00,cpu_model=E5-2670,pcpus=6
+#$ -j y
+#$ -cwd
+#$ -o output.$JOB_ID
+#$ -m abe
+#$ -M othoulrich@gmail.com
+
+#script_dir=$( cd $(dirname $0) ; pwd -P |sed 's@^\(.*\)/scripts.*@\1/scripts@')
+#mats_dir=$script_dir/../materials/unit_bicrystals
+
+#mkdir $script_dir/../proc
+
+cd materials
+time ../scripts/bicrystal/stage1.sh ../proc
+

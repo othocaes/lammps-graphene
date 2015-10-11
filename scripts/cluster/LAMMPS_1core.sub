@@ -1,0 +1,21 @@
+#!/bin/bash
+####This submission script requests the use of all nodes
+####in the intel rack, using 4 cpus per node.
+####Use --network=IB to run on the infiniband fabric
+####Use --network=HPCE to run on the original gigabit fabric
+
+#SBATCH -J LAMMPS_1core
+#SBATCH -o job_output/LAMMPS_1core.o%j
+#SBATCH -e job_output/LAMMPS_1core.e%j
+#SBATCH --share
+#SBATCH -n 1
+#SBATCH -t 12:00:00
+#SBATCH --partition=amd_rack
+
+source /etc/profile.d/modules.sh
+module purge
+module load compilers/intel/2013sp1_cluster_xe
+
+srun /home/oulrich/msl/bin/lmp_msl-mkl < $1 > $2
+
+

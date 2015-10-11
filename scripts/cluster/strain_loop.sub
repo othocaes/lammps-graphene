@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Run apply_strain_sh on the sample in <sample dir>.
+# Strain limit in strain dimension.
+# Usage: sbatch strain_loop.sub <sample dir> <strain limit>
+
+####Use --network=IB to run on the infiniband fabric
+####Use --network=HPCE to run on the original gigabit fabric
+
+#SBATCH -J strain_loop
+#SBATCH -o strain_loop.o%j
+#SBATCH -e strain_loop.e%j
+#SBATCH --share
+#SBATCH -n 1
+#SBATCH -t 12:00:00
+#SBATCH --partition=amd_rack
+
+source ~/.bashrc
+source /etc/profile.d/modules.sh
+module purge
+module load compilers/intel/2013sp1_cluster_xe
+
+
+date
+
+/home/oulrich/msl/scripts/run/apply_strain.sh $1 
+
+date

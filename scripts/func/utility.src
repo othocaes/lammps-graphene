@@ -1,0 +1,25 @@
+
+
+#	Removes all temporary files, i.e. any files that match *tmp*,
+# in  <root dir>.
+#
+# Usage: clean <root dir> 
+
+clean() {
+	if [ -z $1 ]; then dir="."; else dir="$1"; fi
+	echo -n "Cleaning temporary files in \"$dir\"... "
+	rm ${dir}/*tmp* 2> /dev/null
+	echo Done.
+}
+
+#	Removes all temporary files, i.e. any files that match *tmp*,
+# in <root dir> and all subdirectories of <root dir>.
+#
+# Usage: clean_all <root dir> 
+
+clean_all() {
+	if [ -z $1 ]; then dir="."; else dir="$1"; fi
+	echo -n "Cleaning temporary files in \"$dir\" and its subdirectories... "
+	find $dir -name '*tmp*' -exec rm \{\} \; > /dev/null 2> /dev/null
+	echo Done.
+}

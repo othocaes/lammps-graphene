@@ -1,0 +1,334 @@
+# Return x, y, and/or z coordinate(s) for atom #
+
+# Usage: parse_coord [x][y][z] <LAMMPS dump file> <atom #>
+
+parse_coord() {
+	x_on=$(echo $1|sed 's/^[^x]*x[^x]*$*/1/')
+	y_on=$(echo $1|sed 's/^[^y]*y[^y]*$*/1/')
+	z_on=$(echo $1|sed 's/^[^z]*z[^z]*$*/1/')
+	##echo $x_on $y_on $z_on > /dev/stderr
+
+	found_table="false"
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		if [[ $found_table == "true" ]]; then
+			if [[ $(echo $line|cut -d' ' -f1) == $3 ]]; then
+				x=$(echo $line|cut -d' ' -f$x_pos)
+				y=$(echo $line|cut -d' ' -f$y_pos)
+				z=$(echo $line|cut -d' ' -f$z_pos)
+				##echo $x > /dev/stderr
+			else continue
+			fi
+			if [[ $x_on == "1" ]]; then
+				echo -n "$x "
+				##echo "Hello" > /dev/stderr
+			fi
+			if [[ $y_on == "1" ]]; then
+				echo -n "$y "
+			fi
+			if [[ $z_on == "1" ]]; then
+				echo -n "$z "
+			fi
+			break
+		fi
+		if [[ $(echo $line|cut -f1,2 -d' ') == "ITEM: ATOMS" ]]; then
+			i=3; words=$(echo $line|wc -w);
+			while [[ "$i" -le "$words" ]]; do
+				if [[ $(echo $line|cut -d' ' -f$i) == "x" ]]; then x_pos=$((i-2)); fi
+				if [[ $(echo $line|cut -d' ' -f$i) == "y" ]]; then y_pos=$((i-2)); fi
+				if [[ $(echo $line|cut -d' ' -f$i) == "z" ]]; then z_pos=$((i-2)); fi
+				##echo $x_pos $y_pos $z_pos > /dev/stderr
+				(( i++ ))
+			done
+			found_table="true"
+		fi
+		##echo "$found_table: $x $y $z" > /dev/stderr
+	done < $2
+	#echo -ne "\n"
+}
+
+
+# 	Function to return a particular atom's energy from a LAMMPS dump file.
+#
+# Usage: parse_atom_energy <LAMMPS dump file> <atom #>
+
+parse_atomic_energy() {
+	found_table="false"
+	energy=0
+	energy_pos=0
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		if [[ $found_table == "true" ]]; then
+			if [[ $(echo $line|cut -d' ' -f1) == $2 ]]; then
+				energy=$(echo $line|cut -d' ' -f$energy_pos)
+			else continue
+			fi
+			break
+		fi
+		if [[ $(echo $line|cut -f1,2 -d' ') == "ITEM: ATOMS" ]]; then
+			i=3; words=$(echo $line|wc -w);
+			while [[ "$i" -le "$words" ]]; do
+				if [[ $(echo $line|cut -d' ' -f$i) == "c_atomic_energy" ]]; then
+					energy_pos=$((i-2))
+				fi
+				(( i++ ))
+				done
+			found_table="true"
+		fi
+	done < $1
+	echo $energy
+}
+
+
+# 	Function to return a particular atom's pressure from a LAMMPS dump file.
+# v_atomic_pressure is defined in a LAMMPS script, usually as
+# v_atomic_pressure = (stress[xx] + stress[yy])/2.
+#
+# Usage: parse_atomic_pressure <LAMMPS dump file> <atom #>
+
+parse_atomic_pressure() {
+	found_table="false"
+	pressure=0
+	pressure_pos=0
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		if [[ $found_table == "true" ]]; then
+			if [[ $(echo $line|cut -d' ' -f1) == $2 ]]; then
+				pressure=$(echo $line|cut -d' ' -f$pressure_pos)
+			else continue
+			fi
+			break
+		fi
+		if [[ $(echo $line|cut -f1,2 -d' ') == "ITEM: ATOMS" ]]; then
+			i=3; words=$(echo $line|wc -w);
+			while [[ "$i" -le "$words" ]]; do
+				if [[ $(echo $line|cut -d' ' -f$i) == "v_atomic_pressure" ]]; then
+					 pressure_pos=$((i-2))
+				fi
+				(( i++ ))
+				done
+			found_table="true"
+		fi
+	done < $1
+	echo $pressure
+}
+
+
+#	Returns the average bond length for all bonds between the atom with ID
+# <atom #> and its neighbors.
+
+# Usage: parse_avg_bond_length <LAMMPS dump file> <atom #>
+
+
+parse_avg_bond_length() {
+	LAMMPS_dump=$1
+	atom_id=$atom_id
+	cutoff_dist="1.7" #angstroms 
+	neb="0"
+	r="0.0"
+	#echo Hello? > /dev/stderr
+	coords_ori=$(parse_coord xyz $LAMMPS_dump $atom_id)
+	x_ori=$(echo $coords_ori|cut -d' ' -f1|sed 's/[eE]\+/\*10\^/')
+	y_ori=$(echo $coords_ori|cut -d' ' -f2|sed 's/[eE]\+/\*10\^/')
+	z_ori=$(echo $coords_ori|cut -d' ' -f3|sed 's/[eE]\+/\*10\^/')
+	#echo Greetings. > /dev/stderr
+	#x_ori=$(parse_coord x $LAMMPS_dump $atom_id|sed 's/[eE]\+/\*10\^/')
+	#y_ori=$(parse_coord y $LAMMPS_dump $atom_id|sed 's/[eE]\+/\*10\^/')
+	#z_ori=$(parse_coord z $LAMMPS_dump $atom_id|sed 's/[eE]\+/\*10\^/')
+	#echo $x_ori $y_ori $z_ori > /dev/stderr
+	found_table="false"
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		if [[ $found_table == "true" ]]; then
+			remote_id=$(echo $line|cut -d' ' -f$id_pos)
+			if [[ $remote_id == $atom_id ]]; then continue; fi
+			#coords_rem=$(parse_coord xyz $LAMMPS_dump $remote_id )
+			#x_rem=$(echo $coords_rem|cut -d' ' -f1|sed 's/[eE]\+/\*10\^/')
+			#y_rem=$(echo $coords_rem|cut -d' ' -f2|sed 's/[eE]\+/\*10\^/')
+			#z_rem=$(echo $coords_rem|cut -d' ' -f3|sed 's/[eE]\+/\*10\^/')
+			x_rem=$(echo $line|cut -d' ' -f$x_pos|sed 's/[eE]\+/\*10\^/')
+			y_rem=$(echo $line|cut -d' ' -f$y_pos|sed 's/[eE]\+/\*10\^/')
+			z_rem=$(echo $line|cut -d' ' -f$z_pos|sed 's/[eE]\+/\*10\^/')			
+			#echo $x_ori - $x_rem > /dev/stderr
+			#echo $y_ori - $y_rem > /dev/stderr
+			#echo $z_ori - $z_rem > /dev/stderr
+			dist=$(echo "scale=5
+					x=$x_ori - $x_rem
+					y=$y_ori - $y_rem
+					z=$z_ori - $z_rem
+					sqrt(x*x + y*y + z*z)
+					"|bc)
+			#dist="7"
+			#echo $dist > /dev/stderr
+			#echo $r
+			if [[ $(bc <<< "$dist < $cutoff_dist") == "1" ]]; then
+				(( neb++ ))
+				r_tmp=$(bc <<< "$r + $dist")
+				r=$r_tmp
+			fi
+		fi
+		if [[ $(echo $line|cut -f1,2 -d' ') == "ITEM: ATOMS" ]]; then
+			i=3; words=$(echo $line|wc -w);
+			while [[ "$i" -le "$words" ]]; do
+				if [[ $(echo $line|cut -d' ' -f$i) == "id" ]]; then id_pos=$((i-2)); fi
+				if [[ $(echo $line|cut -d' ' -f$i) == "x" ]]; then x_pos=$((i-2)); fi
+				if [[ $(echo $line|cut -d' ' -f$i) == "y" ]]; then y_pos=$((i-2)); fi
+				if [[ $(echo $line|cut -d' ' -f$i) == "z" ]]; then z_pos=$((i-2)); fi
+				#echo $x_pos $y_pos $z_pos > /dev/stderr
+				(( i++ ))
+			done
+			found_table="true"
+		fi
+	done < $LAMMPS_dump
+	echo $(bc <<< "scale=5; $r / $neb")
+	#echo $(bc <<< "scale=5; $r")
+}
+
+
+
+# 	Function to return a particular atom's stress xy component from a LAMMPS
+# dump file. This is the stress [4] component according to LAMMPS.
+#
+# Usage: parse_atomic_stressxy <LAMMPS dump file> <atom #>
+
+parse_atomic_stressxy() {
+	found_table="false"
+	stressxy=0
+	stressxy_pos=0
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		if [[ $found_table == "true" ]]; then
+			if [[ $(echo $line|cut -d' ' -f1) == $2 ]]; then
+				stressxy=$(echo $line|cut -d' ' -f$stressxy_pos)
+			else continue
+			fi
+			break
+		fi
+		if [[ $(echo $line|cut -f1,2 -d' ') == "ITEM: ATOMS" ]]; then
+			i=3; words=$(echo $line|wc -w);
+			while [[ "$i" -le "$words" ]]; do
+				if [[ $(echo $line|cut -d' ' -f$i) == "c_atomic_stress[4]" ]]; then
+					 stressxy_pos=$((i-2))
+				fi
+				(( i++ ))
+				done
+			found_table="true"
+		fi
+	done < $1
+	echo $stressxy
+}
+
+
+#	Return histrogram of atomic coordination from LAMMPS dump file. Bins are
+# 0-9. Output format is "# # # # # # # # # #".
+#
+# Usage: parse_coordinations <LAMMPS dump file>
+
+parse_coordinations() {
+	num_0=0
+	num_1=0
+	num_2=0
+	num_3=0
+	num_4=0
+	num_5=0
+	num_6=0
+	num_7=0
+	num_8=0
+	num_9=0
+	coordination_col=8
+	found_table="false"
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		num_fields=$(echo $line_read|wc -w)
+		#echo $num_fields
+		if [[ $found_table == "false" ]]; then
+			if [[ $(echo $line|cut -d' ' -f1) == "ITEM:" && $(echo $line|cut -d' ' -f2) == "ATOMS" ]]; then
+				found_table=true
+				#echo Found it
+				for field_num in $(seq 1 $num_fields); do
+					if [[ $(echo $line|cut -d' ' -f$field_num) == "c_crd" ]]; then
+						coordination_col=$((field_num - 2))
+						break
+					fi
+				done
+			fi	
+			continue
+		fi
+		#echo here
+		#echo $coordination_col
+		coordination_num=$(echo $line|cut -d' ' -f$coordination_col)
+		case $coordination_num in
+			0) (( num_0++ )) ;;
+			1) (( num_1++ )) ;;
+			2) (( num_2++ )) ;;
+			3) (( num_3++ )) ;;
+			4) (( num_4++ )) ;;
+			5) (( num_5++ )) ;;
+			6) (( num_6++ )) ;;
+			7) (( num_7++ )) ;;
+			8) (( num_8++ )) ;;
+			9) (( num_9++ )) ;;
+		esac
+	done < $1
+	echo $num_0 $num_1 $num_2 $num_3 $num_4 $num_5 $num_6 $num_7 $num_8 $num_9
+}
+
+
+# Return 
+
+
+
+# Return number of atoms found in LAMMPS dump file.
+#
+# Usage: parse_num_atoms_from_dump <LAMMPS dump file>
+
+parse_num_atoms_from_dump() {
+	num_atoms="0"
+	while [[ $num_atoms == "0" ]]; do
+		read -r line_read
+		line=$(echo $line_read|sed 's/^\s*//')
+		if [[ $line == "ITEM: NUMBER OF ATOMS" ]]; then
+			read num_atoms anything_else
+			break
+		fi
+		continue
+	done < $1 
+	echo $num_atoms  
+}
+
+# Return "$xlo $xhi $ylo $yhi $zlo $zhi" from <LAMMPS dump file> to stdout.
+#
+# Usage: parse_box_dimensions_from_dump <LAMMPS dump file>
+parse_box_dimensions_from_dump() {
+	xlo=0
+	xhi=0
+	ylo=0
+	yhi=0
+	zlo=0
+	zhi=0
+	while  read -r line_read ; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		if [[ $(echo $line|cut -d' ' -f1-3) == "ITEM: BOX BOUNDS" ]]; then
+			read xlo xhi
+			read ylo yhi
+			read zlo zhi
+			break;
+		fi
+	done < $1
+	echo "$xlo $xhi $ylo $yhi $zlo $zhi"
+}
+
+
+#	 Return Lx, Ly, and Lz from <LAMMPS dump file> to stdout. Format:
+# "Lx Ly Lz".
+#
+# Usage: parse_box_lengths_from_dump <LAMMPS dump file>
+parse_box_lengths_from_dump() {
+	parse_box_dimensions_from_dump $1 > tmp.boxdims
+	read xlo xhi ylo yhi zlo zhi < tmp.boxdims
+	rm tmp.boxdims
+	Lx=$(bc <<< "$xhi - $xlo")
+	Ly=$(bc <<< "$yhi - $ylo")
+	Lz=$(bc <<< "$zhi - $zlo")
+	echo $Lx $Ly $Lz
+}

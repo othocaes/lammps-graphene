@@ -1,0 +1,24 @@
+
+Goals
+=====
+
+(1)	Validate contradictory experimental findings of intrinsic strength.
+
+(2)	How do the density and location of defects modify the mechanical properties such as young's modulus, breaking strength, and crack propagation?
+
+Tensile strength as well as intrinsic strength:
+
+
+
+-	Young's Modulus as a function of boundary angle and type.
+-	Breaking strength as a function of boundary angle and type.
+-	Crack propagation as a function of boundary angle and type.
+-	Local stress map
+
+** How to quantity crack propagation?
+
+For above, compare SEDREBO, REBO, and ReaxFF
+
+Also compare uniaxial and biaxial, indentation if possible.
+
+

@@ -1,0 +1,187 @@
+
+# 	Return displacement (#.#) from a string where the string matches
+# "<ANYTHING>.#.#". This is useful for returning the displacement
+# from a LAMMPS logfile that is in the form "log.#.#". 
+#
+# Usage: parse_displacement <string>
+
+parse_displacement() {
+	num_periods=`echo $1|grep -o "\."|wc -l`
+	loc_characteristic=$(( num_periods ))
+	loc_mantissa=$(( num_periods +1 ))
+	characteristic=`echo $1|cut -d. -f${loc_characteristic}`
+	mantissa=`echo $1|cut -d. -f${loc_mantissa}`
+	if [[ !"$characteristic =~ ^[0-9]*$" ]]; then
+		characteristic=$mantissa
+		mantissa=0
+	fi
+	echo ${characteristic}.${mantissa}
+}
+
+
+#	Reads a LAMMPS log and returns (final energy - initial energy)/(number of atoms),
+# i.e. the change in energy per atom.
+
+#	Usage: parse_delta_energy_per_atom <LAMMPS log> 
+
+parse_delta_energy_per_atom() {
+	found_table=false
+	num_atoms=1
+	TotEng_col=3
+	final_energy="UNMEASURED"
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		num_fields=$(echo $line_read|wc -w)
+		field1=$(echo $line|cut -d' ' -f1)
+		if [[ $found_table == "false" ]]; then
+			if [ "$field1" == "Step" ]; then
+				found_table=true
+				for count in $(seq 1 $num_fields); do
+					if [[ $(echo $line|cut -d' ' -f$count) == "TotEng" ]]; then
+						TotEng_col=$count
+						break
+					fi
+				done
+			fi	
+			continue
+		fi
+		if [[ $field1 == "Loop" ]]; then
+			num_atoms=$(echo $line|sed 's/.* with \([0-9]*\) atoms/\1/')
+			break
+		fi
+		if [[ $final_energy == "UNMEASURED" ]]; then
+			initial_energy=$(echo $line|cut -d' ' -f$TotEng_col)
+		fi 
+		final_energy=$(echo $line|cut -d' ' -f$TotEng_col)
+		continue
+	done < $1
+	relative_energy=$(bc <<< "scale=10; $final_energy - $initial_energy")
+	bc <<< "scale=10; $relative_energy / $num_atoms"
+}
+
+#	Reads a LAMMPS log and returns (final energy - initial energy), i.e.
+# change in energy over the run.
+
+#	Usage: parse_delta_energy <LAMMPS log> 
+
+parse_delta_energy() {
+	found_table=false
+	TotEng_col=3
+	final_energy="UNMEASURED"
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		num_fields=$(echo $line_read|wc -w)
+		field1=$(echo $line|cut -d' ' -f1)
+		if [[ $found_table == "false" ]]; then
+			if [ "$field1" == "Step" ]; then
+				found_table=true
+				for count in $(seq 1 $num_fields); do
+					if [[ $(echo $line|cut -d' ' -f$count) == "TotEng" ]]; then
+						TotEng_col=$count
+						break
+					fi
+				done
+			fi	
+			continue
+		fi
+		if [[ $field1 == "Loop" ]]; then break; fi
+		if [[ $final_energy == "UNMEASURED" ]]; then
+			initial_energy=$(echo $line|cut -d' ' -f$TotEng_col)
+		fi 
+		final_energy=$(echo $line|cut -d' ' -f$TotEng_col)
+		continue
+	done < $1
+	bc <<< "scale=10; $final_energy - $initial_energy"
+}
+
+
+# Returns index of $2 in $1.
+
+strindex() { 
+  x="${1%%$2*}"
+  [[ $x = $1 ]] && echo -1 || echo ${#x}
+}
+
+
+
+# Returns final energy from LAAMPS log.
+#
+# Usage: parse_final_energy <LAMMPS log>
+
+parse_final_energy() {
+	found_table=false
+	TotEng_col=3
+	final_energy="UNMEASURED"
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		num_fields=$(echo $line_read|wc -w)
+		field1=$(echo $line|cut -d' ' -f1)
+		if [[ $found_table == "false" ]]; then
+			if [[ "$field1" == "Step" ]]; then
+				found_table=true
+				for count in $(seq 1 $num_fields); do
+					if [[ $(echo $line|cut -d' ' -f$count) == "TotEng" ]]; then
+						TotEng_col=$count
+						break
+					fi
+				done
+			fi	
+			continue
+		fi
+		if [[ $field1 == "Loop" ]]; then break; fi
+		final_energy=$(echo $line|cut -d' ' -f$TotEng_col)
+		continue
+	done < $1
+	echo $final_energy
+}
+
+
+#	Return final system stress (-pressure) from LAMMPS log.
+#
+#	Usage: parse_final_system_stress <LAMMPS log>
+
+parse_final_system_stress() {
+	found_table=false
+	Press_col=3
+	final_stress="UNMEASURED"
+	while read -r line_read; do
+		line=$(echo $line_read|sed 's/^\s*//')
+		num_fields=$(echo $line_read|wc -w)
+		field1=$(echo $line|cut -d' ' -f1)
+		if [[ $found_table == "false" ]]; then
+			if [[ "$field1" == "Step" ]]; then
+				found_table=true
+				for count in $(seq 1 $num_fields); do
+					if [[ $(echo $line|cut -d' ' -f$count) == "Press" ]]; then
+						Press_col=$count
+						break
+					fi
+				done
+			fi	
+			continue
+		fi
+		if [[ $field1 == "Loop" ]]; then break; fi
+		final_press=$(echo $line|cut -d' ' -f$Press_col)
+		continue
+	done < $1
+	final_stress=$(bc <<< "$final_press * -1")
+	echo $final_stress
+}
+
+
+# Return number of atoms found in LAMMPS log.
+#
+# Usage: parse_num_atoms <LAMMPS log>
+
+parse_num_atoms() {
+	num_atoms="UNKNOWN"
+	while [[ $num_atoms == "UNKNOWN" ]]; do
+		read -r line_read
+		line=$(echo $line_read|sed 's/^\s*//')
+		if [[ $(echo $line|cut -d' ' -f2) == "atoms" ]]; then
+			num_atoms=$(echo $line|cut -d' ' -f1)
+		fi
+		continue
+	done < $1
+	echo $num_atoms
+}

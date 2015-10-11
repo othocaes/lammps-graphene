@@ -1,0 +1,135 @@
+
+Molecular dynamics of bicrystalline and hydrogenated graphene to determine mechanical properties under tensile load and indentation
+
+
+Sub-Projects
+============
+
+(1)	Find mechanical properties of bicrystalline graphene as function of grain orientation and type
+
+(2) Find mechanical properties of bicrystalline graphene as a function of grain defects
+
+(3) Compare similar properties of hydrogenated graphene.
+
+
+Mechanical properties of interest:
+	-	Local Stress Map
+	-	Tensile Strength
+	-	Elastic Modulus
+	-	Crack Propagation
+
+
+Kien runs analog DFT and provides samples 
+
+
+
+Todo
+====
+
+Complete literature review based on needs of sub-projects 1 & 2.
+
+Receive samples from Kien.
+
+Complete Task List
+
+If there's time, create task list for hydrogenated graphene.
+
+
+Task List
+=========
+
+* Create script to determine local stress map for each simulation step.
+
+* Create script to determine tensile strength and elastic modulus.
+
+* Create script to graph stress-strain curve.
+
+(Sub-project 1)
+
+* Prepare uniaxial tensile load simulation.
+
+* Run uniaxial tensie load simulation on one sample.
+
+* Propagate local stress map, stress-strain, tensile strength, elastic modulus from results.
+
+* Determine whether everything is working properly.
+
+* Prepare uniaxial tensile load simulation for all samples.
+
+* Determine stress maps for each sample.
+
+* Determine stress-strain curve for each sample, including tensile strength and elastic modulus.
+
+* Organize data and graphs.
+
+(Sub-project 2)
+
+* Prepare biaxial tensile load simulation
+
+* Run biaxial tensile load simulation on one sample.
+
+* Propagate local stress map, stress-strain, tensile strength, elastic modulus from results.
+
+* Determine whether everything is working properly.
+
+* Prepare biaxial tensile load simulation for all samples.
+
+* Determine stress maps for each sample.
+
+* Determine stress-strain curve for each sample, including tensile strength and elastic modulus.
+
+* Organize data and graphs.
+
+(Sub-project 1 & 2B)
+
+* Prepare indentation simulation
+
+* Run indentation simulation on one sample.
+
+* Propagate local stress map, stress-strain, tensile strength, elastic modulus from results.
+
+* Determine whether everything is working properly.
+
+* Prepare biaxial tensile load simulation for all samples.
+
+* Determine stress maps for each sample.
+
+* Determine stress-strain curve for each sample, including tensile strength and elastic modulus.
+
+* Organize data and graphs.
+
+
+
+
+
+Done
+====
+
+	
+
+
+
+
+
+
+
+	
+ 
+On the Burner
+=============
+
+**	Grain characterisation program
+
+	Requested Features	
+	-----------------------------------------------
+	-	Index grain boundary atoms
+	-	Index central atoms
+	-	Determine grain orientation and size
+	- 
+
+
+
+
+
+
+

@@ -1,0 +1,33 @@
+# Relax atoms and box
+
+units			metal
+atom_style		atomic
+dimension		3
+boundary		p p m
+
+read_data 		_DATA_FILE
+
+pair_style		sedrebo-S 0.0 0 0
+pair_coeff		* * _POTENTIAL_FILE C
+
+velocity		all create 0. 493838
+
+compute			bond_length all pair/local dist
+compute			crd all coord/atom 2.0
+compute			atomic_energy all pe/atom  
+compute 		atomic_stress all stress/atom
+variable 		atomic_pressure atom (c_atomic_stress[1]+c_atomic_stress[2])/2
+
+fix				BL_hist all ave/histo 1 1 1 1.2 2.0 50 c_bond_length file _BOND_LENGTH_HISTOGRAM_FILE mode vector
+
+timestep 		0.0002
+thermo			1
+thermo_style	custom	step lx ly lz etotal press
+thermo_modify	format float %.10f
+
+dump			RDUMP	all custom 20000 _OUTPUT_DIR/*.dump id x y z c_crd c_atomic_energy v_atomic_pressure c_atomic_stress[4] 
+
+fix box_deform all box/relax x 0.0 y 0.0 couple none vmax 0.1
+
+minimize 1.0e-12 1.0e-6 10000 600000
+min_style cg

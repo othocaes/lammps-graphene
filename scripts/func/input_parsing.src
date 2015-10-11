@@ -1,0 +1,36 @@
+
+#   Functions for parsing LAMMPS input files.
+
+
+#  Reads LAMMPS input data file, returns the file's box.
+#
+# Usage: simulation_box_coords <LAMMPS input file>
+simulation_box_coords() { 
+    found_box="false"
+    while read -r one two three four five other; do
+        until [[ $three == "types" ]]; do
+            read -r one two three other
+        done
+        read toss
+        read xlo xhi other
+        read ylo yhi other
+        read zlo zhi other
+        break
+    done < $1 
+    echo $xlo $xhi $ylo $yhi $zlo $zhi
+}
+
+
+#   Print simulation box side lengths to stdout with format "Lx Ly Lz".
+#
+#   Usage: simulation_box_lengths <LAMMPS input file>
+simulation_box_lengths() {
+        simulation_box_coords $1 > box.coords.tmp
+        read xlo xhi ylo yhi zlo zhi < box.coords.tmp
+
+        rm box.coords.tmp
+        Lx=$(bc <<< "scale=10; $xhi - $xlo")
+        Ly=$(bc <<< "scale=10; $yhi - $ylo")
+        Lz=$(bc <<< "scale=10; $zhi - $zlo")
+        echo $Lx $Ly $Lz
+} 
